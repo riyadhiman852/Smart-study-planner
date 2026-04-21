@@ -1,0 +1,151 @@
+<div class="your">
+   <h1> 🎯Your Tasks🎯</h1>
+</div>
+
+<div id="tasklist"></div>
+
+<div id="progressContainer">
+    <div id="progressBar">0%</div>
+</div>
+
+<!-- Motivational messages -->
+<div id="halfMessage" class="message" style="margin-top:10px;">
+    💪 You can do it! Keep going! 💪
+</div>
+
+<div id="congratsMessage" class="message" style="margin-top:10px;">
+    🎉 Congratulations! All tasks completed! 🎉
+</div>
+
+<link rel="stylesheet" href="style4.css">
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+const taskList = document.getElementById('tasklist');
+const progressBar = document.getElementById('progressBar');
+const halfMessage = document.getElementById('halfMessage');
+const congratsMessage = document.getElementById('congratsMessage');
+
+function renderTasks() {
+    taskList.innerHTML = '';
+    tasks.forEach((task, index) => {
+        const div = document.createElement('div');
+        div.classList.add('taskItem');
+
+        // Checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.completed;
+        checkbox.addEventListener('change', () => {
+            tasks[index].completed = checkbox.checked;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            updateProgress();
+        });
+        div.appendChild(checkbox);
+
+        // Task text
+        const span = document.createElement('span');
+        span.textContent = ` [${task.subject}] ${task.topic} - ${task.task} (Due: ${task.date || 'No Date'})`;
+        div.appendChild(span);
+
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.classList.add('deleteBtn');
+        deleteBtn.addEventListener('click', () => {
+            tasks.splice(index, 1); // Remove task from array
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks(); // Re-render tasks
+        });
+        div.appendChild(deleteBtn);
+
+        taskList.appendChild(div);
+    });
+
+    updateProgress();
+}
+
+function updateProgress() {
+    if(tasks.length === 0) {
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        progressBar.classList.remove('full');
+        halfMessage.classList.remove('show');
+        congratsMessage.classList.remove('show');
+        return;
+    }
+
+    const completedCount = tasks.filter(t => t.completed).length;
+    const percent = Math.round((completedCount / tasks.length) * 100);
+    progressBar.style.width = percent + '%';
+    progressBar.textContent = percent + '%';
+
+    // 100% complete
+    if(percent === 100){
+        progressBar.classList.add('full');
+        halfMessage.classList.remove('show');
+        congratsMessage.classList.add('show');
+    }
+    // 50% or more
+    else if(percent >= 50){
+        progressBar.classList.remove('full');
+        halfMessage.classList.add('show');
+        congratsMessage.classList.remove('show');
+    }
+    // Less than 50%
+    else{
+        progressBar.classList.remove('full');
+        halfMessage.classList.remove('show');
+        congratsMessage.classList.remove('show');
+    }
+}
+
+// Initial render
+renderTasks();
+</script>
+
+<style>
+/* Messages popup animation */
+.message {
+    opacity: 0;
+    transform: scale(0.5);
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.message.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Colors */
+#halfMessage { color: orange; }
+#congratsMessage { color: green; }
+
+/* Task hover effect */
+.taskItem:hover {
+    transform: scale(1.05);
+    background-color: #f0f8ff;
+    color: #094e73;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Delete button style */
+.deleteBtn {
+    margin-left: 10px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    color: red;
+    transition: transform 0.2s;
+}
+
+.deleteBtn:hover {
+    transform: scale(1.2);
+}
+</style>
